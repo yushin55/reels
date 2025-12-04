@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* 스크롤바 완전 숨기기 */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 앱 전체 스타일 */
+html, body, #root {
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 부드러운 스크롤 */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* 릴스 컨테이너 */
+.reels-container {
+  scroll-snap-type: y mandatory;
+}
+
+.reels-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* 터치 피드백 */
+.touch-feedback:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}

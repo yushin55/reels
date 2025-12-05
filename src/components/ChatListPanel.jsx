@@ -29,11 +29,11 @@ const ChatListPanel = ({ currentUser, activeChatId, onSelectChat }) => {
   );
 
   return (
-    <div className="w-80 bg-[#25282c] border-r border-gray-700/50 flex flex-col h-full flex-shrink-0">
+    <div className="w-full sm:w-80 bg-[#25282c] border-r border-gray-700/50 flex flex-col h-full flex-shrink-0">
       {/* Search Header */}
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white font-bold text-xl">Messages</h2>
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="text-white font-bold text-lg sm:text-xl">Messages</h2>
           <button className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 hover:bg-gray-600">
             <span className="text-xl">+</span>
           </button>
@@ -51,9 +51,9 @@ const ChatListPanel = ({ currentUser, activeChatId, onSelectChat }) => {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-3 pb-4 space-y-1 scrollbar-hide">
         {filteredChats.length === 0 ? (
-          <div className="text-center text-gray-500 mt-10 text-sm px-4">
+          <div className="text-center text-gray-500 mt-10 text-xs sm:text-sm px-4">
             <p className="mb-2">대화 내역이 없습니다.</p>
             <p className="text-xs">왼쪽 '릴스' 메뉴에서<br/>새로운 직무 담당자를 찾아보세요!</p>
           </div>

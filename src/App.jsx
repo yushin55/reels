@@ -162,7 +162,7 @@ export default function App() {
       )}
 
       {/* 1. Sidebar - 북마크/릴스 뷰에서는 모바일에서 숨김 */}
-      {(view !== 'bookmarks' && view !== 'reels') || window.innerWidth >= 640 ? (
+      <div className={`${(view === 'bookmarks' || view === 'reels') ? 'hidden sm:block' : ''}`}>
         <Sidebar 
           currentView={view} 
           onViewChange={setView} 
@@ -170,7 +170,7 @@ export default function App() {
           onAdminClick={handleAdminClick}
           isAdmin={isAdmin}
         />
-      ) : null}
+      </div>
 
       {/* 2. Content Area */}
       <div className="flex-1 flex relative overflow-hidden">

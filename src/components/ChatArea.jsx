@@ -117,12 +117,12 @@ const ChatArea = ({ activeChat, currentUser }) => {
 
   if (!activeChat) {
     return (
-      <div className="flex-1 bg-[#f0f2f5] flex flex-col items-center justify-center text-gray-400">
-        <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-          <MessageCircle size={40} className="text-gray-400" />
+      <div className="flex-1 bg-[#f0f2f5] flex flex-col items-center justify-center text-gray-400 px-4">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+          <MessageCircle size={32} className="text-gray-400 sm:w-10 sm:h-10" />
         </div>
-        <h3 className="text-lg font-bold text-gray-600 mb-2">대화를 시작해보세요</h3>
-        <p className="text-sm text-center">왼쪽 목록에서 채팅방을 선택하거나<br/>릴스 메뉴에서 새로운 직무 담당자를 찾아보세요.</p>
+        <h3 className="text-base sm:text-lg font-bold text-gray-600 mb-2">대화를 시작해보세요</h3>
+        <p className="text-xs sm:text-sm text-center">왼쪽 목록에서 채팅방을 선택하거나<br/>릴스 메뉴에서 새로운 직무 담당자를 찾아보세요.</p>
       </div>
     );
   }
@@ -132,23 +132,23 @@ const ChatArea = ({ activeChat, currentUser }) => {
       {/* Chat Messages */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-10">
-          <div className="flex items-center gap-4">
+        <div className="h-14 sm:h-20 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-8 shadow-sm z-10">
+          <div className="flex items-center gap-2 sm:gap-4">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs sm:text-sm">
                 {activeChat.vloggerName?.[0] || 'V'}
               </div>
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+              <div className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
             <div>
-              <h2 className="font-bold text-gray-800 text-lg">{activeChat.vloggerName}</h2>
-              <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+              <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{activeChat.vloggerName}</h2>
+              <p className="text-[10px] sm:text-xs text-green-600 font-medium flex items-center gap-1">
+                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-green-500 rounded-full"></span>
                 AI Assistant Online
               </p>
             </div>
           </div>
-          <div className="flex gap-4 text-gray-400">
+          <div className="hidden sm:flex gap-4 text-gray-400">
             <button className="hover:text-gray-600 transition"><Phone size={20} /></button>
             <button className="hover:text-gray-600 transition"><Video size={20} /></button>
             <button className="hover:text-gray-600 transition"><MoreHorizontal size={20} /></button>
@@ -156,7 +156,7 @@ const ChatArea = ({ activeChat, currentUser }) => {
         </div>
 
         {/* Messages Body */}
-        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-8 space-y-4 sm:space-y-6">
           {/* Date Separator (Mock) */}
           <div className="flex justify-center">
             <span className="text-[10px] text-gray-400 bg-gray-200/50 px-3 py-1 rounded-full">Today</span>
@@ -167,12 +167,12 @@ const ChatArea = ({ activeChat, currentUser }) => {
             return (
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group`}>
                  {!isMe && (
-                   <div className="w-8 h-8 rounded-full bg-gray-300 flex-shrink-0 mr-3 self-end flex items-center justify-center text-xs font-bold text-gray-600">
+                   <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-300 flex-shrink-0 mr-2 sm:mr-3 self-end flex items-center justify-center text-[10px] sm:text-xs font-bold text-gray-600">
                       {activeChat.vloggerName?.[0]}
                    </div>
                  )}
-                 <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[70%]`}>
-                    <div className={`px-5 py-3 rounded-2xl text-sm shadow-sm leading-relaxed ${
+                 <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[70%]`}>
+                    <div className={`px-3 py-2 sm:px-5 sm:py-3 rounded-2xl text-xs sm:text-sm shadow-sm leading-relaxed ${
                       isMe 
                         ? 'bg-gradient-to-r from-green-400 to-green-500 text-white rounded-br-none' 
                         : 'bg-white text-gray-700 border border-gray-100 rounded-bl-none'
@@ -192,18 +192,18 @@ const ChatArea = ({ activeChat, currentUser }) => {
 
         {/* 추천 질문 영역 */}
         {suggestedQuestions.length > 0 && (
-          <div className="px-6 py-3 bg-gradient-to-r from-purple-50 to-blue-50 border-t border-gray-100">
+          <div className="px-3 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-purple-50 to-blue-50 border-t border-gray-100">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={14} className="text-purple-500" />
-              <span className="text-xs font-medium text-purple-600">추천 질문</span>
-              {isLoadingQuestions && <span className="text-xs text-gray-400">(업데이트 중...)</span>}
+              <Sparkles size={12} className="text-purple-500 sm:w-3.5 sm:h-3.5" />
+              <span className="text-[10px] sm:text-xs font-medium text-purple-600">추천 질문</span>
+              {isLoadingQuestions && <span className="text-[10px] sm:text-xs text-gray-400">(업데이트 중...)</span>}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {suggestedQuestions.map((question, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleQuestionClick(question)}
-                  className="px-3 py-2 bg-white text-sm text-gray-700 rounded-xl border border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all shadow-sm hover:shadow"
+                  className="px-2 py-1.5 sm:px-3 sm:py-2 bg-white text-[11px] sm:text-sm text-gray-700 rounded-xl border border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all shadow-sm hover:shadow"
                 >
                   {question}
                 </button>
@@ -213,24 +213,24 @@ const ChatArea = ({ activeChat, currentUser }) => {
         )}
 
         {/* Input Area */}
-        <div className="p-6 bg-white border-t border-gray-100">
-          <form onSubmit={handleSendMessage} className="flex gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-green-100 focus-within:border-green-400 transition-all">
-            <button type="button" className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200/50 transition">
-               <span className="text-xl">☺</span>
+        <div className="p-3 sm:p-6 bg-white border-t border-gray-100">
+          <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3 bg-gray-50 p-1.5 sm:p-2 rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-green-100 focus-within:border-green-400 transition-all">
+            <button type="button" className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200/50 transition">
+               <span className="text-base sm:text-xl">☺</span>
             </button>
             <input
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="메시지를 입력하세요..."
-              className="flex-1 bg-transparent focus:outline-none text-sm text-gray-700"
+              className="flex-1 bg-transparent focus:outline-none text-xs sm:text-sm text-gray-700"
             />
             <button 
               type="submit" 
               disabled={!newMessage.trim()}
-              className={`p-2 rounded-xl transition-all shadow-md ${newMessage.trim() ? 'bg-green-500 text-white hover:bg-green-600 transform hover:scale-105' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+              className={`p-1.5 sm:p-2 rounded-xl transition-all shadow-md ${newMessage.trim() ? 'bg-green-500 text-white hover:bg-green-600 transform hover:scale-105' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
             >
-              <Send size={18} />
+              <Send size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
           </form>
         </div>

@@ -227,7 +227,8 @@ const ReelsView = ({ onClose, onStartChat }) => {
   return (
     <div 
       ref={containerRef}
-      className="absolute inset-0 z-50 bg-black flex flex-col overflow-hidden"
+      className="fixed inset-0 z-50 bg-black flex flex-col overflow-hidden"
+      style={{ height: '100dvh', maxHeight: '100dvh' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -255,8 +256,8 @@ const ReelsView = ({ onClose, onStartChat }) => {
         <div 
           className="relative mx-auto transition-transform duration-300 ease-out"
           style={{
-            width: 'min(100vw, calc((100vh - 64px) * 9 / 16))',
-            height: 'calc(100vh - 64px)',
+            width: 'min(100vw, calc((100dvh - 64px) * 9 / 16))',
+            height: 'calc(100dvh - 64px)',
             maxWidth: '400px',
             transform: isTransitioning ? 'scale(0.95)' : 'scale(1)',
             opacity: isTransitioning ? 0.8 : 1
@@ -275,7 +276,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
           </div>
 
           {/* 오버레이 정보 - 하단 최소화 */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 pb-6 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+          <div className="absolute bottom-0 left-0 right-0 p-3 pb-20 md:pb-6 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 5rem)' }}>
             <div className="pointer-events-auto">
               {/* 프로필 정보 */}
               <div className="flex items-center gap-2 mb-1.5">

@@ -369,31 +369,31 @@ const ReelsView = ({ onClose, onStartChat }) => {
           </div>
 
           {/* 내용 */}
-          <div className="flex-1 flex flex-col p-6">
+          <div className="flex-1 flex flex-col p-4 overflow-y-auto">
             <div className="w-full max-w-2xl mx-auto">
-              <p className="text-gray-300 text-base text-center mb-12 mt-8">
+              <p className="text-gray-300 text-sm text-center mb-6 mt-4">
                 {selectedMentor?.username}님에게 질문하는 방법을 선택하세요.
               </p>
               
               {/* 가로 배치 카드 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* 1:1 대화 카드 */}
                 <button 
                   onClick={() => {
                     setChatMode('oneOnOneInfo');
                   }}
-                  className="p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30 rounded-2xl text-center hover:border-purple-500/60 transition-all active:scale-95 flex flex-col items-center min-h-[280px]"
+                  className="p-5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/30 rounded-xl text-center hover:border-purple-500/60 transition-all active:scale-95 flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-purple-500/30 flex items-center justify-center mb-4">
-                    <MessageSquare size={40} className="text-purple-400" />
+                  <div className="w-16 h-16 rounded-full bg-purple-500/30 flex items-center justify-center mb-3">
+                    <MessageSquare size={32} className="text-purple-400" />
                   </div>
-                  <h4 className="text-white font-bold text-2xl mb-3">1:1 대화</h4>
-                  <span className="text-pink-400 font-bold text-xl mb-3">₩13,000</span>
-                  <p className="text-gray-400 text-base mb-3">
+                  <h4 className="text-white font-bold text-xl mb-2">1:1 대화</h4>
+                  <span className="text-pink-400 font-bold text-lg mb-2">₩13,000</span>
+                  <p className="text-gray-400 text-sm mb-2">
                     30분 정도의 자유로운 대화
                   </p>
-                  <div className="flex items-center gap-2 text-gray-500 text-sm">
-                    <Clock size={14} />
+                  <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                    <Clock size={12} />
                     <span>약 30분 소요</span>
                   </div>
                 </button>
@@ -401,14 +401,14 @@ const ReelsView = ({ onClose, onStartChat }) => {
                 {/* 템플릿 질문 카드 */}
                 <button 
                   onClick={() => setChatMode('template')}
-                  className="p-8 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500/30 rounded-2xl text-center hover:border-green-500/60 transition-all active:scale-95 flex flex-col items-center min-h-[280px]"
+                  className="p-5 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-2 border-green-500/30 rounded-xl text-center hover:border-green-500/60 transition-all active:scale-95 flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-green-500/30 flex items-center justify-center mb-4">
-                    <FileText size={40} className="text-green-400" />
+                  <div className="w-16 h-16 rounded-full bg-green-500/30 flex items-center justify-center mb-3">
+                    <FileText size={32} className="text-green-400" />
                   </div>
-                  <h4 className="text-white font-bold text-2xl mb-3">템플릿으로 질문하기</h4>
-                  <span className="text-green-400 font-bold text-xl mb-3">1회 무료</span>
-                  <p className="text-gray-400 text-sm">
+                  <h4 className="text-white font-bold text-xl mb-2">템플릿으로 질문하기</h4>
+                  <span className="text-green-400 font-bold text-lg mb-2">1회 무료</span>
+                  <p className="text-gray-400 text-xs">
                     질문을 작성하면 답변이 도착할 때 알림을 받아요
                   </p>
                 </button>

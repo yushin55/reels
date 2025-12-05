@@ -151,7 +151,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex w-full h-screen bg-[#1e2024] font-sans overflow-hidden">
+    <div className="flex w-full h-screen bg-[#1e2024] font-sans overflow-hidden touch-manipulation">
       
       {/* 관리자 로그인 모달 */}
       {showAdminLogin && (

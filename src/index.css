@@ -37,3 +37,75 @@ html, body, #root {
   transform: scale(0.95);
   transition: transform 0.1s ease;
 }
+
+/* 모바일 최적화 - 화면 잘림 방지 */
+@media (max-width: 640px) {
+  /* 전체 컨테이너 오버플로우 방지 */
+  * {
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+  
+  /* 고정 너비 요소 방지 */
+  body, #root {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+  
+  /* 말풍선/툴팁 숨김 (모바일에서 화면 밖으로 나감 방지) */
+  [class*="tooltip"],
+  [class*="bubble"],
+  [class*="absolute"][class*="left-"] {
+    display: none !important;
+  }
+  
+  /* 텍스트 줄바꿈 강제 */
+  h1, h2, h3, h4, h5, h6, p, span, div {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  
+  /* 이미지 반응형 */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* 버튼 최소 터치 영역 */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 입력 필드 확대 방지 */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+  
+  /* flexbox 오버플로우 방지 */
+  [class*="flex"] {
+    min-width: 0;
+  }
+}
+
+/* 작은 모바일 기기 (iPhone SE 등) */
+@media (max-width: 375px) {
+  /* 더 작은 패딩 */
+  [class*="p-"] {
+    padding: 0.5rem !important;
+  }
+  
+  /* 폰트 크기 축소 */
+  body {
+    font-size: 14px;
+  }
+}
+
+/* 가로 모드 최적화 */
+@media (max-width: 900px) and (orientation: landscape) {
+  body {
+    overflow-y: auto;
+  }
+}

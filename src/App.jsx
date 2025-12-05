@@ -161,14 +161,16 @@ export default function App() {
         />
       )}
 
-      {/* 1. Sidebar */}
-      <Sidebar 
-        currentView={view} 
-        onViewChange={setView} 
-        onLogout={handleLogout}
-        onAdminClick={handleAdminClick}
-        isAdmin={isAdmin}
-      />
+      {/* 1. Sidebar - 북마크/릴스 뷰에서는 모바일에서 숨김 */}
+      {(view !== 'bookmarks' && view !== 'reels') || window.innerWidth >= 640 ? (
+        <Sidebar 
+          currentView={view} 
+          onViewChange={setView} 
+          onLogout={handleLogout}
+          onAdminClick={handleAdminClick}
+          isAdmin={isAdmin}
+        />
+      ) : null}
 
       {/* 2. Content Area */}
       <div className="flex-1 flex relative overflow-hidden">

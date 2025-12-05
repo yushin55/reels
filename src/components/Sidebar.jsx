@@ -23,28 +23,28 @@ const Sidebar = ({ currentView, onViewChange, onLogout, onAdminClick, isAdmin })
   const shouldShowBubble = showBubble && currentView !== 'reels';
 
   return (
-    <div className="w-20 bg-[#2c2f33] flex flex-col items-center py-6 gap-8 h-full shadow-xl z-20 flex-shrink-0">
+    <div className="w-16 sm:w-20 bg-[#2c2f33] flex flex-col items-center py-4 sm:py-6 gap-4 sm:gap-8 h-full shadow-xl z-20 flex-shrink-0">
       {/* Logo */}
-      <div className="w-14 h-14 rounded-lg bg-white flex items-center justify-center shadow-lg mb-4 p-1">
+      <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg bg-white flex items-center justify-center shadow-lg mb-2 sm:mb-4 p-1">
         <img src="/logo.png" alt="취준로그" className="w-full h-full object-contain" />
       </div>
 
       {/* Nav Items */}
-      <div className="flex flex-col gap-6 w-full items-center flex-1">
+      <div className="flex flex-col gap-3 sm:gap-6 w-full items-center flex-1">
         <button 
           onClick={() => onViewChange('chat')}
-          className={`relative p-3 rounded-xl transition-all duration-300 group ${currentView === 'chat' ? 'bg-white/10 text-green-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+          className={`relative p-2 sm:p-3 rounded-xl transition-all duration-300 group ${currentView === 'chat' ? 'bg-white/10 text-green-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
         >
-          <MessageCircle size={24} />
+          <MessageCircle size={20} className="sm:w-6 sm:h-6" />
           {currentView === 'chat' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-green-400 rounded-r-full" />}
           <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">채팅</span>
         </button>
 
         <button 
           onClick={() => onViewChange('reels')}
-          className={`relative p-3 rounded-xl transition-all duration-300 group ${currentView === 'reels' ? 'bg-white/10 text-pink-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+          className={`relative p-2 sm:p-3 rounded-xl transition-all duration-300 group ${currentView === 'reels' ? 'bg-white/10 text-pink-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
         >
-          <Play size={24} />
+          <Play size={20} className="sm:w-6 sm:h-6" />
           {currentView === 'reels' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-pink-400 rounded-r-full" />}
           <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">릴스 보기</span>
           
@@ -61,32 +61,32 @@ const Sidebar = ({ currentView, onViewChange, onLogout, onAdminClick, isAdmin })
 
         <button 
           onClick={() => onViewChange('bookmarks')}
-          className={`relative p-3 rounded-xl transition-all duration-300 group ${currentView === 'bookmarks' ? 'bg-white/10 text-yellow-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+          className={`relative p-2 sm:p-3 rounded-xl transition-all duration-300 group ${currentView === 'bookmarks' ? 'bg-white/10 text-yellow-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
         >
-          <Bookmark size={24} />
+          <Bookmark size={20} className="sm:w-6 sm:h-6" />
           {currentView === 'bookmarks' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-yellow-400 rounded-r-full" />}
           <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">저장된 영상</span>
         </button>
 
-        <button className="p-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group relative">
-          <Settings size={24} />
+        <button className="p-2 sm:p-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group relative">
+          <Settings size={20} className="sm:w-6 sm:h-6" />
           <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">설정</span>
         </button>
       </div>
 
       {/* Admin & Logout */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2 sm:gap-4">
         <button 
           onClick={onAdminClick}
-          className={`p-3 rounded-xl transition-all duration-300 group ${isAdmin ? 'bg-purple-500/20 text-purple-400' : 'text-gray-500 hover:text-purple-400 hover:bg-white/5'}`}
+          className={`p-2 sm:p-3 rounded-xl transition-all duration-300 group ${isAdmin ? 'bg-purple-500/20 text-purple-400' : 'text-gray-500 hover:text-purple-400 hover:bg-white/5'}`}
         >
-          <Shield size={24} />
+          <Shield size={20} className="sm:w-6 sm:h-6" />
           <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             {isAdmin ? '관리자 모드' : '관리자 로그인'}
           </span>
         </button>
-        <button onClick={onLogout} className="p-3 text-gray-500 hover:text-red-400 transition-colors">
-          <LogOut size={24} />
+        <button onClick={onLogout} className="p-2 sm:p-3 text-gray-500 hover:text-red-400 transition-colors">
+          <LogOut size={20} className="sm:w-6 sm:h-6" />
         </button>
       </div>
     </div>

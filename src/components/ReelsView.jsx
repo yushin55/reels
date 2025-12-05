@@ -264,31 +264,31 @@ const ReelsView = ({ onClose, onStartChat }) => {
             />
           </div>
 
-          {/* 오버레이 정보 - 하단 */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none">
+          {/* 오버레이 정보 - 하단 컴팩트 */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
             <div className="pointer-events-auto">
               {/* 프로필 정보 */}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg ring-2 ring-white">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-base ring-2 ring-white">
                   {currentVlog.username[0]}
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-lg drop-shadow-lg">{currentVlog.username}</h3>
-                  <p className="text-gray-300 text-sm drop-shadow-lg">{currentVlog.role}</p>
+                  <h3 className="text-white font-bold text-base drop-shadow-lg">{currentVlog.username}</h3>
+                  <p className="text-gray-300 text-xs drop-shadow-lg">{currentVlog.role}</p>
                 </div>
               </div>
 
-              {/* 설명 */}
-              <p className="text-white text-sm mb-3 drop-shadow-lg leading-relaxed">
+              {/* 설명 - 2줄 제한 */}
+              <p className="text-white text-xs mb-2 drop-shadow-lg leading-relaxed line-clamp-2">
                 {currentVlog.description}
               </p>
 
-              {/* 태그 */}
-              <div className="flex gap-2 flex-wrap mb-4">
+              {/* 태그 - 가로 스크롤 */}
+              <div className="flex gap-1.5 overflow-x-auto mb-3 scrollbar-hide">
                 {currentVlog.tags.map(tag => (
                   <span 
                     key={tag} 
-                    className="text-xs bg-white/20 px-3 py-1 rounded-full text-white backdrop-blur-sm"
+                    className="text-xs bg-white/20 px-2.5 py-0.5 rounded-full text-white backdrop-blur-sm whitespace-nowrap"
                   >
                     {tag}
                   </span>
@@ -298,12 +298,12 @@ const ReelsView = ({ onClose, onStartChat }) => {
               {/* 대화하기 버튼 */}
               <button 
                 onClick={() => {
-                  setSelectedMentor(currentVlog); // 선택한 멘토 정보 저장
+                  setSelectedMentor(currentVlog);
                   setShowChatModal(true);
                 }}
-                className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                className="w-full py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 text-sm"
               >
-                <MessageCircle size={20} />
+                <MessageCircle size={18} />
                 이 직무에 대해 질문하기
               </button>
             </div>

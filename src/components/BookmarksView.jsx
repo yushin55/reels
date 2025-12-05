@@ -8,22 +8,37 @@ const BookmarksView = ({ onClose, onStartChat }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
+    if (!auth.currentUser) {
+      setLoading(false);
+      return;
+    }
 
     const q = query(
       collection(db, 'bookmarks'),
-      where('userId', '==', auth.currentUser.uid),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', auth.currentUser.uid)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const bookmarkList = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setBookmarks(bookmarkList);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q, 
+      (snapshot) => {
+        const bookmarkList = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        // 클라이언트 사이드에서 정렬
+        bookmarkList.sort((a, b) => {
+          const timeA = a.createdAt?.seconds || 0;
+          const timeB = b.createdAt?.seconds || 0;
+          return timeB - timeA;
+        });
+        setBookmarks(bookmarkList);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error fetching bookmarks:', error);
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, []);
@@ -78,16 +93,16 @@ const BookmarksView = ({ onClose, onStartChat }) => {
             <p className="text-sm text-center">릴스에서 마음에 드는 영상을<br/>저장 버튼으로 추가해보세요!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
             {bookmarks.map((bookmark) => {
               const vlog = bookmark.vlogData;
               return (
                 <div 
                   key={bookmark.id}
-                  className="bg-gray-800 rounded-xl overflow-hidden hover:ring-2 hover:ring-yellow-400 transition group"
+                  className="bg-gray-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-yellow-400 transition group"
                 >
                   {/* 썸네일 */}
-                  <div className="relative aspect-[9/16] bg-gray-900">
+                  <div className="relative aspect-[9/16] bg-gray-900" style={{maxHeight: '180px'}}>
                     <img 
                       src={`https://img.youtube.com/vi/${vlog.videoId}/maxresdefault.jpg`}
                       alt={vlog.username}
@@ -108,32 +123,32 @@ const BookmarksView = ({ onClose, onStartChat }) => {
                     {/* 삭제 버튼 */}
                     <button
                       onClick={() => handleDelete(bookmark.id)}
-                      className="absolute top-2 right-2 p-2 bg-red-500/80 hover:bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition"
+                      className="absolute top-1 right-1 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition"
                     >
-                      <Trash2 size={16} className="text-white" />
+                      <Trash2 size={12} className="text-white" />
                     </button>
 
                     {/* 하단 정보 */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                    <div className="absolute bottom-0 left-0 right-0 p-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
                           {vlog.username[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-white font-bold text-sm truncate">{vlog.username}</h3>
-                          <p className="text-gray-300 text-xs truncate">{vlog.role}</p>
+                          <h3 className="text-white font-bold text-xs truncate">{vlog.username}</h3>
+                          <p className="text-gray-300 text-[10px] truncate">{vlog.role}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* 액션 버튼 */}
-                  <div className="p-3 bg-gray-800">
+                  <div className="p-2 bg-gray-800">
                     <button
                       onClick={() => handleStartChat(vlog)}
-                      className="w-full py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition"
+                      className="w-full py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition"
                     >
-                      <MessageCircle size={16} />
+                      <MessageCircle size={12} />
                       대화하기
                     </button>
                   </div>

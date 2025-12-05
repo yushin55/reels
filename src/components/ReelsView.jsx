@@ -87,23 +87,46 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
   const toggleInterest = async (id) => {
     const newState = !interested[id];
+    
+    // 인증 확인
+    if (!auth.currentUser) {
+      console.error('User not authenticated');
+      alert('로그인이 필요합니다. 페이지를 새로고침해주세요.');
+      return;
+    }
+    
+    // UI 먼저 업데이트
     setInterested(prev => ({ ...prev, [id]: newState }));
     
     // Firestore에 북마크 저장/삭제
-    try {
-      if (newState) {
-        // 저장
-        await addDoc(collection(db, 'bookmarks'), {
-          userId: auth.currentUser?.uid || 'anonymous',
+    if (newState) {
+      try {
+        console.log('Attempting to save bookmark...', {
+          userId: auth.currentUser.uid,
+          vlogId: id,
+          vlogName: currentVlog.username
+        });
+        
+        const docRef = await addDoc(collection(db, 'bookmarks'), {
+          userId: auth.currentUser.uid,
           vlogId: id,
           vlogData: currentVlog,
           createdAt: serverTimestamp()
         });
-      } else {
-        // 삭제 로직은 나중에 구현 (일단 저장만)
+        
+        console.log('✅ Bookmark saved successfully! Doc ID:', docRef.id);
+      } catch (error) {
+        console.error('❌ Error saving bookmark:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message
+        });
+        // 에러 발생 시 상태 되돌리기
+        setInterested(prev => ({ ...prev, [id]: false }));
+        alert(`저장 실패: ${error.message}`);
       }
-    } catch (error) {
-      console.error('Error saving bookmark:', error);
+    } else {
+      console.log('Bookmark unsaved (UI only)');
     }
   };
 

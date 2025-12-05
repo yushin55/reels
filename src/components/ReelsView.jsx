@@ -5,7 +5,7 @@ import {
   Play,
   CheckCircle2,
   X,
-  Phone,
+  MessageSquare,
   FileText,
   Clock,
   Send,
@@ -338,12 +338,12 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
       {/* 대화 선택 모달 */}
       {showChatModal && !chatMode && (
-        <div className="absolute inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#1e2024] rounded-2xl w-full max-w-md overflow-hidden">
+        <div className="absolute inset-0 z-60 bg-black/80 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-[#1e2024] rounded-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto">
             {/* 모달 헤더 */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-700">
               <div className="flex items-center gap-2">
-                <h3 className="text-white font-bold text-lg">멘토에게 질문하기</h3>
+                <h3 className="text-white font-bold text-base sm:text-lg">멘토에게 질문하기</h3>
               </div>
               <button 
                 onClick={() => {
@@ -361,10 +361,10 @@ const ReelsView = ({ onClose, onStartChat }) => {
             </div>
 
             {/* 모달 내용 */}
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               {/* 선택 화면 */}
-              <div className="space-y-4">
-                <p className="text-gray-400 text-sm mb-4">
+              <div className="space-y-3 sm:space-y-4">
+                <p className="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4">
                   {selectedMentor?.username}님에게 질문하는 방법을 선택하세요.
                 </p>
                 
@@ -373,22 +373,22 @@ const ReelsView = ({ onClose, onStartChat }) => {
                   onClick={() => {
                     setChatMode('oneOnOneInfo');
                   }}
-                  className="w-full p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl text-left hover:border-purple-500/60 transition-all group"
+                  className="w-full p-3 sm:p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl text-left hover:border-purple-500/60 transition-all group"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <Phone size={24} className="text-purple-400" />
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare size={20} className="text-purple-400 sm:w-6 sm:h-6" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-white font-bold text-lg">1:1 대화</h4>
-                        <span className="text-pink-400 font-bold">₩20,000</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-white font-bold text-base sm:text-lg">1:1 대화</h4>
+                        <span className="text-pink-400 font-bold text-sm sm:text-base whitespace-nowrap">₩13,000</span>
                       </div>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <p className="text-gray-400 text-xs sm:text-sm mt-1">
                         30분 정도의 자유로운 대화
                       </p>
-                      <div className="flex items-center gap-2 mt-2 text-gray-500 text-xs">
-                        <Clock size={14} />
+                      <div className="flex items-center gap-2 mt-1.5 sm:mt-2 text-gray-500 text-xs">
+                        <Clock size={12} className="sm:w-3.5 sm:h-3.5" />
                         <span>약 30분 소요</span>
                       </div>
                     </div>
@@ -398,18 +398,18 @@ const ReelsView = ({ onClose, onStartChat }) => {
                 {/* 템플릿 질문 카드 */}
                 <button 
                   onClick={() => setChatMode('template')}
-                  className="w-full p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl text-left hover:border-green-500/60 transition-all group"
+                  className="w-full p-3 sm:p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl text-left hover:border-green-500/60 transition-all group"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <FileText size={24} className="text-green-400" />
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <FileText size={20} className="text-green-400 sm:w-6 sm:h-6" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-white font-bold text-lg">템플릿으로 질문하기</h4>
-                        <span className="text-green-400 font-bold">1회 무료</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-white font-bold text-base sm:text-lg">템플릿으로 질문하기</h4>
+                        <span className="text-green-400 font-bold text-sm sm:text-base whitespace-nowrap">1회 무료</span>
                       </div>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <p className="text-gray-400 text-xs sm:text-sm mt-1">
                         질문을 작성하면 답변이 도착할 때 알림을 받아요
                       </p>
                     </div>
@@ -423,10 +423,10 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
       {/* 1:1 대화 상세 설명 화면 */}
       {chatMode === 'oneOnOneInfo' && (
-        <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) { setShowChatModal(false); setChatMode(null); }}}>
-          <div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-[480px] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) { setShowChatModal(false); setChatMode(null); }}}>
+          <div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-[480px] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* 헤더 */}
-            <div className="relative p-6 pb-4 border-b border-gray-700">
+            <div className="relative p-4 sm:p-6 pb-4 border-b border-gray-700">
               <button 
                 onClick={() => setChatMode(null)}
                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
@@ -434,88 +434,88 @@ const ReelsView = ({ onClose, onStartChat }) => {
                 <X size={24} />
               </button>
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Phone size={28} className="text-white" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center">
+                  <MessageSquare size={28} className="text-white" />
                 </div>
                 <div>
-                  <h2 className="text-white font-bold text-xl">1:1 대화</h2>
-                  <p className="text-purple-400 font-semibold">₩20,000</p>
+                  <h2 className="text-white font-bold text-lg sm:text-xl">1:1 대화</h2>
+                  <p className="text-purple-400 font-semibold">₩13,000</p>
                 </div>
               </div>
             </div>
 
             {/* 내용 */}
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* 멘토 정보 */}
-              <div className="bg-gray-800/50 rounded-xl p-4">
-                <p className="text-gray-400 text-sm mb-2">대화 상대</p>
+              <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4">
+                <p className="text-gray-400 text-xs sm:text-sm mb-2">대화 상대</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm sm:text-base">
                     {selectedMentor?.username?.[0]}
                   </div>
                   <div>
-                    <p className="text-white font-semibold">{selectedMentor?.username?.replace('_', ' ')}</p>
-                    <p className="text-gray-400 text-sm">{selectedMentor?.role}</p>
+                    <p className="text-white font-semibold text-sm sm:text-base">{selectedMentor?.username?.replace('_', ' ')}</p>
+                    <p className="text-gray-400 text-xs sm:text-sm">{selectedMentor?.role}</p>
                   </div>
                 </div>
               </div>
 
               {/* 서비스 설명 */}
-              <div className="space-y-4">
-                <h3 className="text-white font-bold text-lg">서비스 안내</h3>
+              <div className="space-y-3 sm:space-y-4">
+                <h3 className="text-white font-bold text-base sm:text-lg">서비스 안내</h3>
                 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Clock size={16} className="text-purple-400" />
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Clock size={14} className="text-purple-400 sm:w-4 sm:h-4" />
                   </div>
                   <div>
-                    <p className="text-white font-medium">30분 자유로운 대화</p>
-                    <p className="text-gray-400 text-sm">현직자와 30분 동안 자유롭게 대화하며 직무에 대해 깊이 있는 탐색을 할 수 있어요.</p>
+                    <p className="text-white font-medium text-sm sm:text-base">30분 자유로운 대화</p>
+                    <p className="text-gray-400 text-xs sm:text-sm">현직자와 30분 동안 자유롭게 대화하며 직무에 대해 깊이 있는 탐색을 할 수 있어요.</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <MessageCircle size={16} className="text-pink-400" />
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <MessageSquare size={14} className="text-pink-400 sm:w-4 sm:h-4" />
                   </div>
                   <div>
-                    <p className="text-white font-medium">실시간 음성/영상 통화</p>
-                    <p className="text-gray-400 text-sm">일정 조율 후 Zoom 또는 Google Meet를 통해 실시간으로 대화할 수 있어요.</p>
+                    <p className="text-white font-medium text-sm sm:text-base">실시간 채팅 상담</p>
+                    <p className="text-gray-400 text-xs sm:text-sm">일정 조율 후 Zoom 또는 Google Meet를 통해 실시간으로 대화할 수 있어요.</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <FileText size={16} className="text-green-400" />
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <FileText size={14} className="text-green-400 sm:w-4 sm:h-4" />
                   </div>
                   <div>
-                    <p className="text-white font-medium">맞춤형 커리어 조언</p>
-                    <p className="text-gray-400 text-sm">이력서 피드백, 면접 팁, 업계 동향 등 궁금한 모든 것을 물어볼 수 있어요.</p>
+                    <p className="text-white font-medium text-sm sm:text-base">맞춤형 커리어 조언</p>
+                    <p className="text-gray-400 text-xs sm:text-sm">이력서 피드백, 면접 팁, 업계 동향 등 궁금한 모든 것을 물어볼 수 있어요.</p>
                   </div>
                 </div>
               </div>
 
               {/* 진행 과정 */}
-              <div className="bg-gray-800/50 rounded-xl p-4">
-                <h4 className="text-white font-semibold mb-3">진행 과정</h4>
-                <div className="space-y-2 text-sm">
+              <div className="bg-gray-800/50 rounded-xl p-3 sm:p-4">
+                <h4 className="text-white font-semibold mb-2 sm:mb-3 text-sm sm:text-base">진행 과정</h4>
+                <div className="space-y-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs flex items-center justify-center">1</span>
+                    <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs flex items-center justify-center flex-shrink-0">1</span>
                     <span className="text-gray-300">결제 완료</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-purple-500/60 text-white text-xs flex items-center justify-center">2</span>
+                    <span className="w-5 h-5 rounded-full bg-purple-500/60 text-white text-xs flex items-center justify-center flex-shrink-0">2</span>
                     <span className="text-gray-300">멘토가 확인 후 일정 제안 (1~3일 소요)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-purple-500/40 text-white text-xs flex items-center justify-center">3</span>
+                    <span className="w-5 h-5 rounded-full bg-purple-500/40 text-white text-xs flex items-center justify-center flex-shrink-0">3</span>
                     <span className="text-gray-300">일정 확정 후 30분 대화 진행</span>
                   </div>
                 </div>
               </div>
 
               {/* 유의사항 */}
-              <div className="text-gray-500 text-xs space-y-1">
+              <div className="text-gray-500 text-[10px] sm:text-xs space-y-1">
                 <p>• 결제 후 멘토가 일정을 제안하면 카카오톡으로 알림을 보내드려요.</p>
                 <p>• 멘토 사정으로 대화가 불가한 경우 전액 환불됩니다.</p>
                 <p>• 결제 후 7일 이내 대화가 성사되지 않으면 자동 환불됩니다.</p>
@@ -523,14 +523,14 @@ const ReelsView = ({ onClose, onStartChat }) => {
             </div>
 
             {/* 하단 버튼 */}
-            <div className="p-6 pt-0">
+            <div className="p-4 sm:p-6 pt-0">
               <button 
                 onClick={() => {
                   saveOneOnOneClick();
                   setChatMode('payment');
                   setPaymentStep(1);
                 }}
-                className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl transition-all text-lg"
+                className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl transition-all text-base sm:text-lg"
               >
                 결제하기
               </button>
@@ -541,8 +541,8 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
       {/* 결제 화면 - KG이니시스 스타일 모달 팝업 */}
       {chatMode === 'payment' && (
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center" onClick={(e) => { if (e.target === e.currentTarget) { setShowChatModal(false); setChatMode(null); setPaymentStep(1); }}}>
-          <div className="bg-[#e8e8e8] shadow-2xl w-[800px] flex overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-2 sm:p-4" onClick={(e) => { if (e.target === e.currentTarget) { setShowChatModal(false); setChatMode(null); setPaymentStep(1); }}}>
+          <div className="bg-[#e8e8e8] shadow-2xl w-full max-w-[800px] flex flex-col sm:flex-row overflow-hidden max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
           {paymentStep === 1 && (
             <>
               {/* 왼쪽: 결제 수단 선택 */}
@@ -722,7 +722,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">상품가격</span>
-                    <span className="text-[#ff6600]">20,000 원</span>
+                    <span className="text-[#ff6600]">13,000 원</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">제공기간</span>
@@ -733,7 +733,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
                 <div className="mt-4 pt-3 border-t border-[#eed]">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 text-[11px]">결제금액</span>
-                    <span className="text-[#0066cc] font-bold text-[16px]">20,000 원</span>
+                    <span className="text-[#0066cc] font-bold text-[16px]">13,000 원</span>
                   </div>
                 </div>
 

@@ -36,7 +36,8 @@ const ChatArea = ({ activeChat, currentUser }) => {
 
   useEffect(() => {
     if (!activeChat) return;
-    const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', `chats/${activeChat.id}/messages`);
+    // Use explicit path segments for nested collections: 'artifacts' / appId / 'public' / 'data' / 'chats' / activeChat.id / 'messages'
+    const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'chats', activeChat.id, 'messages');
     const q = query(messagesRef, orderBy('timestamp', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const newMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -88,7 +89,7 @@ const ChatArea = ({ activeChat, currentUser }) => {
     setNewMessage('');
     
     try {
-      const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', `chats/${activeChat.id}/messages`);
+      const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'chats', activeChat.id, 'messages');
       
       // 사용자 메시지 저장
       await addDoc(messagesRef, {

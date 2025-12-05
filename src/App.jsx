@@ -13,7 +13,7 @@ import {
 import { auth, db, appId } from './config/firebase';
 
 // Components
-import { Sidebar, ChatListPanel, ChatArea, ReelsView, AdminLogin, AdminChatPanel } from './components';
+import { Sidebar, ChatListPanel, ChatArea, ReelsView, AdminLogin, AdminChatPanel, BookmarksView } from './components';
 
 // Main App Component
 export default function App() {
@@ -113,20 +113,32 @@ export default function App() {
   if (authError || !user) {
     return (
       <div className="h-screen w-full bg-[#1e2024] flex items-center justify-center text-white">
-        <div className="flex flex-col items-center gap-4 text-center px-4">
+        <div className="flex flex-col items-center gap-4 text-center px-4 max-w-2xl">
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
             <span className="text-3xl">⚠️</span>
           </div>
           <h2 className="text-xl font-bold">인증 오류</h2>
-          <p className="text-gray-400 text-sm max-w-md">
+          <p className="text-gray-400 text-sm">
             Firebase 익명 인증이 활성화되지 않았습니다.<br/>
             Firebase Console에서 Authentication → Sign-in method → Anonymous를 활성화해주세요.
           </p>
           {authError && (
-            <p className="text-red-400 text-xs mt-2 bg-red-500/10 px-4 py-2 rounded-lg">
-              {authError}
-            </p>
+            <div className="text-red-400 text-xs mt-2 bg-red-500/10 px-4 py-3 rounded-lg">
+              <p className="font-mono">{authError}</p>
+              <p className="mt-2 text-gray-300">Firebase: Error (auth/configuration-not-found)</p>
+            </div>
           )}
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-left text-sm text-gray-300 mt-4">
+            <p className="font-bold text-blue-400 mb-2">🔧 해결 방법:</p>
+            <ol className="list-decimal list-inside space-y-1">
+              <li>Firebase Console 접속: <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">console.firebase.google.com</a></li>
+              <li>프로젝트 선택: <span className="font-mono bg-gray-700 px-2 py-0.5 rounded">reels-c097d</span></li>
+              <li>왼쪽 메뉴에서 <strong>Authentication</strong> 클릭</li>
+              <li><strong>Sign-in method</strong> 탭 클릭</li>
+              <li><strong>Anonymous</strong> 항목 찾아서 <strong>사용 설정</strong> 클릭</li>
+              <li>이 페이지에서 <strong>다시 시도</strong> 버튼 클릭</li>
+            </ol>
+          </div>
           <button 
             onClick={() => window.location.reload()} 
             className="mt-4 px-6 py-2 bg-green-500 hover:bg-green-600 rounded-lg transition"
@@ -164,6 +176,12 @@ export default function App() {
         {/* 관리자 뷰 */}
         {view === 'admin' && isAdmin ? (
           <AdminChatPanel onBack={() => setView('chat')} />
+        ) : view === 'bookmarks' ? (
+          /* 북마크 뷰 */
+          <BookmarksView 
+            onClose={() => setView('chat')}
+            onStartChat={handleStartChat}
+          />
         ) : (
           <>
             {/* Chat List & Chat Window Layout */}

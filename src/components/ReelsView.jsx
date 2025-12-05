@@ -85,8 +85,26 @@ const ReelsView = ({ onClose, onStartChat }) => {
     }
   };
 
-  const toggleInterest = (id) => {
-    setInterested(prev => ({ ...prev, [id]: !prev[id] }));
+  const toggleInterest = async (id) => {
+    const newState = !interested[id];
+    setInterested(prev => ({ ...prev, [id]: newState }));
+    
+    // Firestore에 북마크 저장/삭제
+    try {
+      if (newState) {
+        // 저장
+        await addDoc(collection(db, 'bookmarks'), {
+          userId: auth.currentUser?.uid || 'anonymous',
+          vlogId: id,
+          vlogData: currentVlog,
+          createdAt: serverTimestamp()
+        });
+      } else {
+        // 삭제 로직은 나중에 구현 (일단 저장만)
+      }
+    } catch (error) {
+      console.error('Error saving bookmark:', error);
+    }
   };
 
   const goToNext = () => {

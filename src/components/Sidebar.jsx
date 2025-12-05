@@ -59,12 +59,18 @@ const Sidebar = ({ currentView, onViewChange, onLogout, onAdminClick, isAdmin })
           )}
         </button>
 
-        <button className="p-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+        <button 
+          onClick={() => onViewChange('bookmarks')}
+          className={`relative p-3 rounded-xl transition-all duration-300 group ${currentView === 'bookmarks' ? 'bg-white/10 text-yellow-400' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+        >
           <Bookmark size={24} />
+          {currentView === 'bookmarks' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-yellow-400 rounded-r-full" />}
+          <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">저장된 영상</span>
         </button>
 
-        <button className="p-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+        <button className="p-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group relative">
           <Settings size={24} />
+          <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">설정</span>
         </button>
       </div>
 

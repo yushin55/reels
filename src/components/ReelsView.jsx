@@ -545,8 +545,8 @@ const ReelsView = ({ onClose, onStartChat }) => {
           <div className="bg-[#e8e8e8] shadow-2xl w-full max-w-[800px] flex flex-col sm:flex-row overflow-hidden max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
           {paymentStep === 1 && (
             <>
-              {/* 왼쪽: 결제 수단 선택 */}
-              <div className="w-[120px] bg-[#d9d9d9] flex flex-col text-[11px]">
+              {/* 왼쪽: 결제 수단 선택 - 모바일에서 숨김 */}
+              <div className="hidden sm:flex w-[120px] bg-[#d9d9d9] flex-col text-[11px]">
                 <div className="p-2.5 bg-white border-b border-[#ccc] flex items-center gap-1.5">
                   <input type="checkbox" className="w-3 h-3" readOnly />
                   <span className="text-gray-600">직접입력</span>
@@ -579,15 +579,15 @@ const ReelsView = ({ onClose, onStartChat }) => {
               </div>
 
               {/* 가운데: 결제 수단 상세 */}
-              <div className="flex-1 bg-white p-4 overflow-y-auto border-l border-r border-[#ddd]">
+              <div className="flex-1 bg-white p-3 sm:p-4 overflow-y-auto sm:border-l sm:border-r border-[#ddd] min-w-0">
                 {/* 헤더 */}
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#eee]">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 pb-2 border-b border-[#eee]">
                   <div className="flex items-center">
                     <span className="text-[#0066cc] font-bold text-sm">Code</span>
                     <span className="text-[#ff3366] font-bold text-sm">M</span>
                     <span className="text-gray-700 font-bold text-sm">Shop</span>
                   </div>
-                  <p className="text-gray-400 text-[11px]">안전하고 편리한 이니시스결제입니다.</p>
+                  <p className="text-gray-400 text-[10px] sm:text-[11px]">안전하고 편리한 이니시스결제입니다.</p>
                 </div>
 
                 {/* 이용약관 */}
@@ -695,7 +695,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
               </div>
 
               {/* 오른쪽: 결제 정보 - 노란색 배경 */}
-              <div className="w-[180px] bg-[#fff8dc] p-4 flex flex-col relative">
+              <div className="w-full sm:w-[180px] bg-[#fff8dc] p-4 flex flex-col relative">
                 {/* 닫기 버튼 */}
                 <button 
                   onClick={() => {
@@ -703,7 +703,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
                     setChatMode(null);
                     setPaymentStep(1);
                   }}
-                  className="absolute top-2 right-2 text-[#ff6666] hover:text-[#ff3333] text-xl font-bold"
+                  className="absolute top-2 right-2 text-[#ff6666] hover:text-[#ff3333] text-xl font-bold z-10"
                 >
                   ×
                 </button>

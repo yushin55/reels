@@ -151,7 +151,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex w-full h-screen bg-[#1e2024] font-sans overflow-hidden touch-manipulation">
+    <div className="flex w-full h-screen bg-[#1e2024] font-sans overflow-hidden">
       
       {/* 관리자 로그인 모달 */}
       {showAdminLogin && (
@@ -162,7 +162,7 @@ export default function App() {
       )}
 
       {/* 1. Sidebar - 북마크/릴스 뷰에서는 모바일에서 숨김 */}
-      <div className={`${(view === 'bookmarks' || view === 'reels') ? 'hidden sm:block' : ''}`}>
+      <div className={`${(view === 'bookmarks' || view === 'reels') ? 'hidden sm:flex' : 'flex'}`}>
         <Sidebar 
           currentView={view} 
           onViewChange={setView} 

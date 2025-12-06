@@ -356,7 +356,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
             </div>
           </div>
 
-          <div className="absolute right-4 top-4 z-40 pointer-events-auto">
+          <div className="absolute left-4 top-4 z-40 pointer-events-auto">
             <button 
               onTouchEnd={(e) => e.stopPropagation()}
               onClick={(e) => {
@@ -1106,7 +1106,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
                         <Bookmark size={18} className="text-yellow-600" />
                       </div>
                       <p className="text-gray-700 text-sm">
-                        우측 상단의 <span className="font-semibold">저장 버튼</span>을 눌러 관심 직업을 저장해요
+                        좌측 상단의 <span className="font-semibold">저장 버튼</span>을 눌러 관심 직업을 저장해요
                       </p>
                     </div>
                   </div>

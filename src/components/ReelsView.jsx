@@ -53,8 +53,11 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const containerRef = useRef(null);
   const iframeRef = useRef(null);
   
-  // 터치 좌표 저장
+  // [좌표 저장] 탭 vs 스와이프 판별용
   const touchStartRef = useRef({ x: 0, y: 0 });
+  
+  // [PC vs 모바일 구분] 터치 이벤트가 발생했는지 체크하는 플래그
+  const isTouchInteractionRef = useRef(false);
 
   // 영상 변경 시 UI 상태 동기화
   useEffect(() => {
@@ -83,11 +86,12 @@ const ReelsView = ({ onClose, onStartChat }) => {
     );
   };
 
-  // [영상 로딩 완료 핸들러] - 아이폰 버벅임 해결의 핵심
+  // ---------------------------------------------------------
+  // [1. 영상 로딩 완료 핸들러] - iOS 자동재생 & 멈춤 해결
+  // ---------------------------------------------------------
   const handleVideoLoad = () => {
     if (iframeRef.current) {
-      // 1단계: 무조건 [소리 끔] + [재생] 먼저 보냄 (안전 제일)
-      // 이렇게 해야 아이폰이 "어? 소리 켜네? 차단!" 하지 않고 일단 영상을 틀어줌
+      // [1단계] 로딩 즉시: 소리 끄고 + 재생 (iOS가 가장 좋아하는 상태)
       iframeRef.current.contentWindow.postMessage(
         JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*'
       );
@@ -95,8 +99,8 @@ const ReelsView = ({ onClose, onStartChat }) => {
         JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
       );
 
-      // 2단계: 소리 켜기 (시간차 공격)
-      // 영상이 안정적으로 재생되기 시작한 후(약 1.5초 뒤)에 소리를 켬
+      // [2단계] 1.5초 후: 소리 켜기 (영상이 안정적으로 재생된 후)
+      // 소리가 켜져야 하는 상황이라면, 딜레이를 두고 켭니다.
       if (!globalMuteState) {
         setTimeout(() => {
           if(iframeRef.current) {
@@ -104,7 +108,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
               JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
             );
           }
-        }, 1500); // 1.5초 딜레이 (버벅임 방지용 안전 마진)
+        }, 1500); 
       }
     }
   };
@@ -208,42 +212,31 @@ const ReelsView = ({ onClose, onStartChat }) => {
     }
   };
 
-  // 키보드 이벤트 처리
+  // 키보드/휠 이벤트 (PC용)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // 모달이 열려있으면 스크롤 이벤트 무시
       if (showChatModal || chatMode) {
-        if (e.key === 'Escape') {
-          setShowChatModal(false);
-          setChatMode(null);
-        }
+        if (e.key === 'Escape') { setShowChatModal(false); setChatMode(null); }
         return;
       }
       if (e.key === 'ArrowDown' || e.key === 'j') goToNext();
       if (e.key === 'ArrowUp' || e.key === 'k') goToPrev();
       if (e.key === 'Escape') onClose();
+      if (e.key === ' ') toggleSound(); // 스페이스바 소리 토글
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, isTransitioning, showChatModal, chatMode]);
 
-  // 마우스 휠 이벤트 처리
   useEffect(() => {
     const handleWheel = (e) => {
-      // 모달이 열려있으면 스크롤 이벤트 무시
-      if (showChatModal || chatMode) {
-        return;
-      }
+      if (showChatModal || chatMode) return;
       e.preventDefault();
       if (e.deltaY > 0) goToNext();
       else if (e.deltaY < 0) goToPrev();
     };
-    
     const container = containerRef.current;
-    if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: false });
-    }
+    if (container) container.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       if (container) {
         container.removeEventListener('wheel', handleWheel);
@@ -253,15 +246,13 @@ const ReelsView = ({ onClose, onStartChat }) => {
   }, [currentIndex, isTransitioning, showChatModal, chatMode]);
 
   // ---------------------------------------------------------
-  // [통합 터치 시스템] - 갤럭시/아이폰 스와이프 & 탭
+  // [2. 통합 터치/클릭 시스템] - PC & 갤럭시 & 아이폰 모두 대응
   // ---------------------------------------------------------
-  
-  // 터치 좌표 저장
-  const touchStartRef = useRef({ x: 0, y: 0 });
 
   // 터치 시작
   const handleTouchStart = (e) => {
     if (showChatModal || chatMode) return;
+    isTouchInteractionRef.current = true; // "이건 터치다!" 표시
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
@@ -271,11 +262,10 @@ const ReelsView = ({ onClose, onStartChat }) => {
   // 터치 이동
   const handleTouchMove = (e) => {
     if (showChatModal || chatMode) return;
-    // 갤럭시 스크롤 간섭 방지
-    if(e.cancelable) e.preventDefault();
+    if(e.cancelable) e.preventDefault(); // 갤럭시 스크롤 방지
   };
 
-  // 터치 끝
+  // 터치 끝 (모바일용 탭/스와이프 처리)
   const handleTouchEnd = (e) => {
     if (showChatModal || chatMode) return;
     
@@ -285,15 +275,30 @@ const ReelsView = ({ onClose, onStartChat }) => {
     const diffX = touchStartRef.current.x - endX;
     const diffY = touchStartRef.current.y - endY;
     
-    // [스와이프 판정] 세로로 50px 이상 움직임
+    // [스와이프] 세로 50px 이상 이동
     if (Math.abs(diffY) > 50) {
-      if (diffY > 0) goToNext(); // 다음 영상
-      else goToPrev(); // 이전 영상
+      if (diffY > 0) goToNext();
+      else goToPrev();
+      // 스와이프 했으면 터치 플래그 즉시 해제 (클릭 간섭 방지)
+      setTimeout(() => { isTouchInteractionRef.current = false; }, 100);
     }
-    // [탭 판정] 거의 제자리 클릭 (10px 미만) -> 소리 토글
+    // [탭] 10px 미만 이동 -> 갤럭시 소리 토글
     else if (Math.abs(diffX) < 10 && Math.abs(diffY) < 10) {
       toggleSound();
+      // 터치로 처리했으므로 0.5초간 클릭 이벤트 무시 (중복 방지)
+      setTimeout(() => { isTouchInteractionRef.current = false; }, 500);
     }
+  };
+
+  // [PC용 클릭 핸들러]
+  // 모바일에서는 touchEnd가 먼저 실행되고, 그 다음 click이 실행됩니다.
+  // isTouchInteractionRef가 true면 "아까 터치로 처리했으니 클릭은 무시해"라고 판단합니다.
+  // PC에서는 터치 이벤트가 없으므로 항상 실행됩니다.
+  const handleOverlayClick = (e) => {
+    if (isTouchInteractionRef.current) {
+      return; // 모바일 터치 중복 실행 방지
+    }
+    toggleSound(); // PC 마우스 클릭 실행
   };
 
   const currentVlog = shuffledVlogs[currentIndex];
@@ -368,8 +373,14 @@ const ReelsView = ({ onClose, onStartChat }) => {
             />
           </div>
 
-          {/* 소리 아이콘 표시용 오버레이 */}
-          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          {/* 소리 켜기/끄기 오버레이 버튼 
+              - onClick을 부활시켜 PC 마우스 클릭 대응
+              - handleOverlayClick 내부에서 모바일 중복 실행 방지
+          */}
+          <div 
+            className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer" 
+            onClick={handleOverlayClick}
+          >
             {isMuted && (
               <div className="bg-black/40 p-5 rounded-full backdrop-blur-sm animate-pulse pointer-events-none flex flex-col items-center">
                 <span className="text-white text-4xl mb-2">🔇</span>
@@ -380,7 +391,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
             )}
           </div>
 
-          {/* 오버레이 정보 - 하단 최소화 */}
+          {/* 오버레이 정보 (기존 유지) */}
           <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none z-20">
             <div className="pointer-events-auto">
               {/* 프로필 정보 */}

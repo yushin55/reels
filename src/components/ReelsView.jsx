@@ -71,27 +71,22 @@ const ReelsView = ({ onClose, onStartChat }) => {
     localStorage.setItem('hasSeenReelsGuide', 'true');
   };
 
-  // [수정된 소리 토글 함수] 갤럭시 멈춤 현상 해결
+  // [소리 토글] 사용자가 화면을 탭했을 때 실행
   const toggleSound = () => {
     if (!iframeRef.current) return;
     
-    // 1. 상태 업데이트
+    // 상태 뒤집기
     const wantSound = !globalSoundOn;
     globalSoundOn = wantSound; // 전역 변수 업데이트
     setIsMuted(!wantSound);    // UI 업데이트
     
-    // 2. 명령어 전송 (즉시 실행)
-    // [핵심] setTimeout 제거! 갤럭시는 사용자 터치(Gesture)가 살아있을 때만 재생 허용
-    // 딜레이를 주면 "코드가 멋대로 실행"으로 간주되어 차단됨
-    
-    // (1) 소리 설정 명령 전송
+    // 명령어 전송
     const command = wantSound ? 'unMute' : 'mute';
     iframeRef.current.contentWindow.postMessage(
       JSON.stringify({ event: 'command', func: command, args: [] }), 
       '*'
     );
-
-    // (2) 딜레이 없이 즉시 재생 명령 전송!
+    // 소리 켜면서 재생도 확실하게 (멈춤 방지)
     iframeRef.current.contentWindow.postMessage(
       JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
       '*'
@@ -182,7 +177,6 @@ const ReelsView = ({ onClose, onStartChat }) => {
   // [클릭 핸들러] PC/모바일 공용
   const handleOverlayClick = (e) => {
     e.stopPropagation();
-    e.preventDefault(); // [중요] 기본 클릭 동작(더블탭 확대 등) 방지
     
     // 스와이프 중이었다면 클릭 무시 (화면 넘김만 수행)
     if (isSwipingRef.current) {
@@ -299,12 +293,12 @@ const ReelsView = ({ onClose, onStartChat }) => {
             />
           </div>
 
-          {/* ★ [핵심 수정] 소리 켜기/끄기 오버레이 버튼 
-              - w-full h-full: 크기 강제 지정
-              - bg-transparent: 투명 배경을 깔아서 클릭 이벤트를 확실히 가로채음 (Click-through 방지)
+          {/* 소리 켜기/끄기 오버레이 버튼 
+              - onClick으로 작동 (PC 호환)
+              - 모바일은 handleOverlayClick 내부에서 스와이프 체크
           */}
           <div 
-            className="absolute inset-0 z-10 w-full h-full bg-transparent flex items-center justify-center cursor-pointer" 
+            className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer" 
             onClick={handleOverlayClick}
           >
             {/* 소리 꺼진 상태(isMuted=true)일 때만 아이콘 표시 */}

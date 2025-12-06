@@ -40,6 +40,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const [questionDetail, setQuestionDetail] = useState('');
   const [email, setEmail] = useState('');
   const [selectedMentor, setSelectedMentor] = useState(null); // 선택한 멘토 정보 저장
+  const [isMuted, setIsMuted] = useState(true); // 음소거 상태 관리 (기본값: true)
   // 가이드라인은 처음 한 번만 표시 (localStorage 확인)
   const [showGuide, setShowGuide] = useState(() => {
     const hasSeenGuide = localStorage.getItem('hasSeenReelsGuide');
@@ -287,15 +288,40 @@ const ReelsView = ({ onClose, onStartChat }) => {
               key={currentVlog.videoId + currentIndex}
               id={`youtube-player-${currentIndex}`}
               className="absolute inset-0 w-full h-full pointer-events-none"
-              src={`https://www.youtube.com/embed/${currentVlog.videoId}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&loop=1&playlist=${currentVlog.videoId}&showinfo=0&disablekb=1&fs=0&enablejsapi=1`}
+              src={`https://www.youtube.com/embed/${currentVlog.videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&loop=1&playlist=${currentVlog.videoId}&showinfo=0&disablekb=1&fs=0&enablejsapi=1`}
               title={currentVlog.username}
               allow="autoplay; encrypted-media"
               allowFullScreen
             />
           </div>
 
+          {/* 소리 켜기/끄기 오버레이 버튼 */}
+          <div 
+            className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMuted(!isMuted);
+            }}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              setIsMuted(!isMuted);
+            }}
+          >
+            {isMuted && (
+              <div className="bg-black/50 p-4 rounded-full backdrop-blur-sm animate-pulse pointer-events-none relative">
+                <span className="text-white text-3xl">🔇</span>
+                <span className="absolute bottom-[-25px] left-1/2 -translate-x-1/2 text-white text-xs whitespace-nowrap drop-shadow-lg">
+                  탭하여 소리켜기
+                </span>
+              </div>
+            )}
+          </div>
+
           {/* 오버레이 정보 - 하단 최소화 */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none">
+          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none z-20">
             <div className="pointer-events-auto">
               {/* 프로필 정보 */}
               <div className="flex items-center gap-2 mb-1.5">

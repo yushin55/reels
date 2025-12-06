@@ -80,26 +80,22 @@ const ReelsView = ({ onClose, onStartChat }) => {
     globalSoundOn = wantSound; // 전역 변수 업데이트
     setIsMuted(!wantSound);    // UI 업데이트
     
-    // 2. 명령어 전송 (순차 처리)
-    // 갤럭시에서는 소리 명령과 재생 명령이 동시에 들어가면 충돌하여 멈출 수 있음.
+    // 2. 명령어 전송 (즉시 실행)
+    // [핵심] setTimeout 제거! 갤럭시는 사용자 터치(Gesture)가 살아있을 때만 재생 허용
+    // 딜레이를 주면 "코드가 멋대로 실행"으로 간주되어 차단됨
     
-    // (1) 먼저 소리 설정 명령을 보냄
+    // (1) 소리 설정 명령 전송
     const command = wantSound ? 'unMute' : 'mute';
     iframeRef.current.contentWindow.postMessage(
       JSON.stringify({ event: 'command', func: command, args: [] }), 
       '*'
     );
 
-    // (2) [핵심] 아주 짧은 딜레이 후 재생 명령 전송
-    // 소리 설정이 적용될 시간을 줌 (50ms ~ 100ms)
-    setTimeout(() => {
-      if (iframeRef.current) {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
-          '*'
-        );
-      }
-    }, 100);
+    // (2) 딜레이 없이 즉시 재생 명령 전송!
+    iframeRef.current.contentWindow.postMessage(
+      JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
+      '*'
+    );
   };
 
   // ---------------------------------------------------------

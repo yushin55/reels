@@ -51,34 +51,14 @@ const ReelsView = ({ onClose, onStartChat }) => {
   });
   const [guideStep, setGuideStep] = useState(0); // 가이드 단계
   const containerRef = useRef(null);
-  const iframeRef = useRef(null); // iframe 제어를 위한 ref
+  const iframeRef = useRef(null);
   
-  // [오버레이용] 탭 vs 스와이프 판별을 위한 좌표
-  const videoTouchStartRef = useRef({ x: 0, y: 0 });
-  
-  // [컨테이너용] 화면 전환 스와이프 감지 좌표
-  const swipeStartY = useRef(0);
-  const swipeEndY = useRef(0);
+  // 터치 좌표 저장
+  const touchStartRef = useRef({ x: 0, y: 0 });
 
-  // [수정된 useEffect] 영상 바뀔 때 로직 단순화
+  // 영상 변경 시 UI 상태 동기화
   useEffect(() => {
-    // UI 상태 동기화
     setIsMuted(globalMuteState);
-    
-    // 영상이 바뀌면 iframe이 새로 로딩되므로, 
-    // 여기서 복잡한 명령을 보내기보다 onLoad(handleVideoLoad)에게 맡기는 게 안전함.
-    // 다만, 혹시 로딩이 너무 빨라서 onLoad를 놓쳤을 경우를 대비해 가볍게 신호 한 번만 보냄.
-    const timer = setTimeout(() => {
-      if (iframeRef.current) {
-        // "일단 재생해" (소리 설정은 건드리지 않음 -> 멈춤 원인 제거)
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
-          '*'
-        );
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
   }, [currentIndex]);
 
   // 가이드 닫을 때 localStorage에 저장
@@ -103,69 +83,28 @@ const ReelsView = ({ onClose, onStartChat }) => {
     );
   };
 
-  // 비디오 터치 시작: 손가락이 닿은 위치 기억 (stopPropagation 제거!)
-  const handleVideoTouchStart = (e) => {
-    // 절대 여기서 stopPropagation 금지! (드래그 막힘)
-    videoTouchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    };
-  };
-
-  // [갤럭시 즉시 반응] 터치 끝: 탭/스와이프 통합 판별
-  const handleVideoTouchEnd = (e) => {
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndYCoord = e.changedTouches[0].clientY;
-
-    // 가로/세로 이동 거리 계산
-    const distanceX = Math.abs(touchEndX - videoTouchStartRef.current.x);
-    const distanceY = Math.abs(touchEndYCoord - videoTouchStartRef.current.y);
-
-    // ★ [핵심] 이동 거리가 10px 미만일 때만 '탭'으로 인정 → 즉시 소리 토글
-    if (distanceX < 10 && distanceY < 10) {
-      e.preventDefault(); // 브라우저의 click 이벤트 발생 방지 (300ms 지연 제거)
-      e.stopPropagation(); // 부모로 전파 방지 (화면넘김 방지)
-      toggleSound(); // 손 떼자마자 즉시 실행!
-    }
-    // 10px 이상 움직였으면 스와이프로 간주 (부모에서 화면 전환)
-  };
-
-  // [PC 전용] 마우스 클릭 처리
-  const handleVideoMouseUp = (e) => {
-    e.stopPropagation();
-    toggleSound();
-  };
-
-  // [수정된 handleVideoLoad] 소리 켤 때 멈춤 방지 (Unmute + Play 콤보)
+  // [영상 로딩 완료 핸들러] - 아이폰 버벅임 해결의 핵심
   const handleVideoLoad = () => {
     if (iframeRef.current) {
-      // 1. [1단계] 일단 무음으로 재생 (아이폰이 100% 허용함)
+      // 1단계: 무조건 [소리 끔] + [재생] 먼저 보냄 (안전 제일)
+      // 이렇게 해야 아이폰이 "어? 소리 켜네? 차단!" 하지 않고 일단 영상을 틀어줌
       iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: 'command', func: 'mute', args: [] }), 
-        '*'
+        JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*'
       );
       iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
-        '*'
+        JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
       );
 
-      // 2. [2단계] 소리 켜기 (소리 켜짐 상태일 때만)
+      // 2단계: 소리 켜기 (시간차 공격)
+      // 영상이 안정적으로 재생되기 시작한 후(약 1.5초 뒤)에 소리를 켬
       if (!globalMuteState) {
-        // 1초(1000ms)는 너무 길어서 끊김이 느껴짐 -> 0.3초(300ms)로 단축
         setTimeout(() => {
           if(iframeRef.current) {
-            // ★ 중요: 소리를 켬과 동시에 "다시 재생해!"라고 한 번 더 명령함
-            // 이렇게 하면 아이폰이 소리 켜면서 영상을 멈추려다가도 다시 재생하게 됨
             iframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'unMute', args: [] }), 
-              '*'
-            );
-            iframeRef.current.contentWindow.postMessage(
-              JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
-              '*'
+              JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
             );
           }
-        }, 300);
+        }, 1500); // 1.5초 딜레이 (버벅임 방지용 안전 마진)
       }
     }
   };
@@ -314,58 +253,60 @@ const ReelsView = ({ onClose, onStartChat }) => {
   }, [currentIndex, isTransitioning, showChatModal, chatMode]);
 
   // ---------------------------------------------------------
-  // [컨테이너 터치 로직] - 화면 넘기기 담당
+  // [통합 터치 시스템] - 갤럭시/아이폰 스와이프 & 탭
   // ---------------------------------------------------------
   
+  // 터치 좌표 저장
+  const touchStartRef = useRef({ x: 0, y: 0 });
+
   // 터치 시작
-  const handleContainerTouchStart = (e) => {
+  const handleTouchStart = (e) => {
     if (showChatModal || chatMode) return;
-    swipeStartY.current = e.touches[0].clientY;
-    swipeEndY.current = e.touches[0].clientY; // 시작할 때 End도 초기화 (중요!)
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    };
   };
 
-  // 터치 이동 (갤럭시 드래그 이슈 해결 핵심)
-  const handleContainerTouchMove = (e) => {
+  // 터치 이동
+  const handleTouchMove = (e) => {
     if (showChatModal || chatMode) return;
-    
-    // ★ [핵심 해결책] 브라우저의 기본 스크롤 동작을 막아야 
-    // 자바스크립트가 드래그 방향을 정확히 읽을 수 있음
-    if (e.cancelable) e.preventDefault();
-    
-    swipeEndY.current = e.touches[0].clientY;
+    // 갤럭시 스크롤 간섭 방지
+    if(e.cancelable) e.preventDefault();
   };
 
   // 터치 끝
-  const handleContainerTouchEnd = () => {
+  const handleTouchEnd = (e) => {
     if (showChatModal || chatMode) return;
     
-    const diff = swipeStartY.current - swipeEndY.current;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
     
-    // ★ [판정 기준] 50px 이상 움직여야만 스와이프로 인정
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        // Start(아래) - End(위) > 0 : 손가락을 위로 올림 -> 다음 영상
-        goToNext();
-      } else {
-        // Start(위) - End(아래) < 0 : 손가락을 아래로 내림 -> 이전 영상
-        goToPrev();
-      }
+    const diffX = touchStartRef.current.x - endX;
+    const diffY = touchStartRef.current.y - endY;
+    
+    // [스와이프 판정] 세로로 50px 이상 움직임
+    if (Math.abs(diffY) > 50) {
+      if (diffY > 0) goToNext(); // 다음 영상
+      else goToPrev(); // 이전 영상
     }
-    // 50px 미만이면 아무 일도 안 함 (단순 터치 시 화면 안 넘어감)
+    // [탭 판정] 거의 제자리 클릭 (10px 미만) -> 소리 토글
+    else if (Math.abs(diffX) < 10 && Math.abs(diffY) < 10) {
+      toggleSound();
+    }
   };
 
   const currentVlog = shuffledVlogs[currentIndex];
 
-  // 터치 이벤트를 passive: false로 등록 (preventDefault 활성화)
+  // 이벤트 리스너 등록
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const onTouchStart = (e) => handleContainerTouchStart(e);
-    const onTouchMove = (e) => handleContainerTouchMove(e);
-    const onTouchEnd = (e) => handleContainerTouchEnd(e);
+    const onTouchStart = (e) => handleTouchStart(e);
+    const onTouchMove = (e) => handleTouchMove(e);
+    const onTouchEnd = (e) => handleTouchEnd(e);
 
-    // ★ passive: false를 해야 e.preventDefault()가 작동함
     container.addEventListener('touchstart', onTouchStart, { passive: false });
     container.addEventListener('touchmove', onTouchMove, { passive: false });
     container.addEventListener('touchend', onTouchEnd, { passive: false });
@@ -380,9 +321,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
   return (
     <div 
       ref={containerRef}
-      // ★ [중요] touch-none: 브라우저 기본 터치 액션(스크롤, 새로고침 등) 완전 차단
       className="absolute inset-0 z-50 bg-black flex flex-col overflow-hidden touch-none"
-      style={{ touchAction: 'none' }}
     >
       {/* 헤더 */}
       <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-30 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
@@ -429,15 +368,8 @@ const ReelsView = ({ onClose, onStartChat }) => {
             />
           </div>
 
-          {/* 소리 켜기/끄기 오버레이 버튼 */}
-          {/* ★ onClick 제거: 갤럭시에서 300ms 지연 발생하므로 onTouchEnd만 사용 */}
-          <div 
-            className="absolute inset-0 z-10 flex items-center justify-center touch-auto"
-            style={{ touchAction: 'auto' }}
-            onTouchStart={handleVideoTouchStart}
-            onTouchEnd={handleVideoTouchEnd}
-            onMouseUp={handleVideoMouseUp}
-          >
+          {/* 소리 아이콘 표시용 오버레이 */}
+          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
             {isMuted && (
               <div className="bg-black/40 p-5 rounded-full backdrop-blur-sm animate-pulse pointer-events-none flex flex-col items-center">
                 <span className="text-white text-4xl mb-2">🔇</span>

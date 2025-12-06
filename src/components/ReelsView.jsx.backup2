@@ -17,9 +17,8 @@ import vlogDataDefault from '../data/vlogData';
 import { db, auth } from '../config/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-// [중요] "사용자가 소리를 켰는가?"를 기억하는 전역 변수
-// false(음소거)로 시작하지만, 한 번 켜면 계속 true 유지
-let globalSoundOn = false; 
+// 전역 변수: 기본값을 '소리 켜짐(false)'으로 변경
+let globalMuteState = false; 
 
 const ReelsView = ({ onClose, onStartChat }) => {
   const [shuffledVlogs] = useState(() => {
@@ -44,9 +43,10 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const [email, setEmail] = useState('');
   const [selectedMentor, setSelectedMentor] = useState(null);
   
-  // 현재 UI상 소리 상태 (화면에 아이콘 띄울지 말지 결정)
-  const [isMuted, setIsMuted] = useState(!globalSoundOn);
+  // 소리 상태 (초기값: 소리 켜짐)
+  const [isMuted, setIsMuted] = useState(globalMuteState);
   
+  // 가이드
   const [showGuide, setShowGuide] = useState(() => {
     const hasSeenGuide = localStorage.getItem('hasSeenReelsGuide');
     return !hasSeenGuide;
@@ -56,14 +56,14 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const containerRef = useRef(null);
   const iframeRef = useRef(null);
   
-  // 터치 좌표
+  // 터치 좌표 저장
   const touchStartRef = useRef({ x: 0, y: 0 });
+  const isTouchInteractionRef = useRef(false);
   const isSwipingRef = useRef(false);
 
-  // 영상 변경 시 UI 상태 업데이트
+  // [수정 1] 영상 변경 시 강제로 음소거하지 않고, 현재 전역 상태 유지
   useEffect(() => {
-    // 전역 소리 상태에 맞춰 UI 아이콘 상태 동기화
-    setIsMuted(!globalSoundOn);
+    setIsMuted(globalMuteState);
   }, [currentIndex]);
 
   const closeGuide = () => {
@@ -71,22 +71,19 @@ const ReelsView = ({ onClose, onStartChat }) => {
     localStorage.setItem('hasSeenReelsGuide', 'true');
   };
 
-  // [소리 토글] 사용자가 화면을 탭했을 때 실행
   const toggleSound = () => {
     if (!iframeRef.current) return;
     
-    // 상태 뒤집기
-    const wantSound = !globalSoundOn;
-    globalSoundOn = wantSound; // 전역 변수 업데이트
-    setIsMuted(!wantSound);    // UI 업데이트
+    const newMuteState = !isMuted;
+    setIsMuted(newMuteState);
+    globalMuteState = newMuteState;
     
-    // 명령어 전송
-    const command = wantSound ? 'unMute' : 'mute';
+    const command = newMuteState ? 'mute' : 'unMute';
     iframeRef.current.contentWindow.postMessage(
       JSON.stringify({ event: 'command', func: command, args: [] }), 
       '*'
     );
-    // 소리 켜면서 재생도 확실하게 (멈춤 방지)
+    // 소리 켜면서 혹시 멈춰있을 영상 강제 재생
     iframeRef.current.contentWindow.postMessage(
       JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
       '*'
@@ -94,34 +91,25 @@ const ReelsView = ({ onClose, onStartChat }) => {
   };
 
   // ---------------------------------------------------------
-  // [핵심] 영상 로딩 완료 핸들러 (숏츠 방식 구현)
+  // [수정 2] 로딩 완료 시 '소리 켜기' + '재생' 강제 전송
   // ---------------------------------------------------------
   const handleVideoLoad = () => {
     if (iframeRef.current) {
-      // 1. [재생] 일단 무조건 재생 명령부터 보냄 (영상 멈춤 방지 최우선)
+      // 1. 현재 설정된 소리 상태 적용 (기본값: 소리 켬)
+      const muteCommand = globalMuteState ? 'mute' : 'unMute';
       iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
-        '*'
+        JSON.stringify({ event: 'command', func: muteCommand, args: [] }), '*'
       );
-
-      // 2. [소리] 전역 상태 확인
-      if (globalSoundOn) {
-        // 사용자가 이전에 소리를 켰다면 -> 즉시 소리 켬 (연속 재생)
-        // iframe을 재활용했기 때문에 아이폰도 이걸 막지 않음!
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
-        );
-      } else {
-        // 아직 소리를 안 켰거나 껐다면 -> 소리 끔
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*'
-        );
-      }
+      
+      // 2. 재생 명령 (무조건 전송)
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
+      );
     }
   };
 
   // ---------------------------------------------------------
-  // [통합 터치/클릭 시스템] (PC & 모바일 완벽 호환)
+  // [3. 통합 터치/클릭 시스템]
   // ---------------------------------------------------------
   
   const goToNext = () => {
@@ -142,6 +130,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
   const handleTouchStart = (e) => {
     if (showChatModal || chatMode) return;
+    isTouchInteractionRef.current = true;
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
@@ -151,9 +140,8 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
   const handleTouchMove = (e) => {
     if (showChatModal || chatMode) return;
-    if(e.cancelable) e.preventDefault(); // 갤럭시 스크롤 간섭 해결
+    if(e.cancelable) e.preventDefault(); // 갤럭시 스크롤 방지
     
-    // 이동 거리 계산 -> 스와이프 판단
     const currentY = e.touches[0].clientY;
     if (Math.abs(touchStartRef.current.y - currentY) > 10) {
       isSwipingRef.current = true;
@@ -166,25 +154,23 @@ const ReelsView = ({ onClose, onStartChat }) => {
     const endY = e.changedTouches[0].clientY;
     const diffY = touchStartRef.current.y - endY;
     
-    // 스와이프 (50px 이상)
     if (Math.abs(diffY) > 50) {
       if (diffY > 0) goToNext();
       else goToPrev();
+      setTimeout(() => { isTouchInteractionRef.current = false; }, 100);
     }
-    // 탭 동작은 onClick(handleOverlayClick)에서 처리
+    else {
+      // 탭 동작은 onClick에서 처리하도록 둠
+      setTimeout(() => { isTouchInteractionRef.current = false; }, 500);
+    }
   };
 
-  // [클릭 핸들러] PC/모바일 공용
   const handleOverlayClick = (e) => {
     e.stopPropagation();
-    
-    // 스와이프 중이었다면 클릭 무시 (화면 넘김만 수행)
     if (isSwipingRef.current) {
       isSwipingRef.current = false;
       return;
     }
-
-    // 진짜 탭(클릭) -> 소리 토글
     toggleSound();
   };
 
@@ -197,7 +183,6 @@ const ReelsView = ({ onClose, onStartChat }) => {
     const onTouchMove = (e) => handleTouchMove(e);
     const onTouchEnd = (e) => handleTouchEnd(e);
 
-    // passive: false 필수 (스크롤 제어권 확보)
     container.addEventListener('touchstart', onTouchStart, { passive: false });
     container.addEventListener('touchmove', onTouchMove, { passive: false });
     container.addEventListener('touchend', onTouchEnd, { passive: false });
@@ -280,15 +265,12 @@ const ReelsView = ({ onClose, onStartChat }) => {
         >
           {/* YouTube iframe */}
           <div className="absolute inset-0 w-full h-full overflow-hidden rounded-xl">
-            {/* ★★★ [가장 중요] key를 제거하여 iframe을 재활용합니다. ★★★ 
-               이렇게 해야 아이폰에서 영상이 바뀌어도 "같은 플레이어"로 인식해서 
-               소리 권한을 유지해줍니다.
-            */}
+            {/* ★ Key 제거: iframe 재활용으로 연속 재생 시 소리 권한 유지 */}
             <iframe 
               ref={iframeRef}
               className="absolute inset-0 w-full h-full pointer-events-none"
-              // mute=1 (초기 로딩은 무조건 무음) - onLoad에서 JS로 풉니다.
-              src={`https://www.youtube.com/embed/${currentVlog.videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&loop=1&playlist=${currentVlog.videoId}&showinfo=0&disablekb=1&fs=0&enablejsapi=1&origin=${window.location.origin}`}
+              // [수정 3] mute=0 (소리 켜짐), autoplay=1 설정
+              src={`https://www.youtube.com/embed/${currentVlog.videoId}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&loop=1&playlist=${currentVlog.videoId}&showinfo=0&disablekb=1&fs=0&enablejsapi=1&origin=${window.location.origin}`}
               title={currentVlog.username}
               allow="autoplay; encrypted-media"
               allowFullScreen
@@ -296,15 +278,12 @@ const ReelsView = ({ onClose, onStartChat }) => {
             />
           </div>
 
-          {/* 소리 켜기/끄기 오버레이 버튼 
-              - onClick으로 작동 (PC 호환)
-              - 모바일은 handleOverlayClick 내부에서 스와이프 체크
-          */}
+          {/* 소리 켜기/끄기 오버레이 버튼 */}
           <div 
             className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer" 
             onClick={handleOverlayClick}
           >
-            {/* 소리 꺼진 상태(isMuted=true)일 때만 아이콘 표시 */}
+            {/* 소리가 꺼져있을 때(isMuted=true)만 아이콘 표시 */}
             {isMuted && (
               <div className="bg-black/40 p-5 rounded-full backdrop-blur-sm animate-pulse pointer-events-none flex flex-col items-center">
                 <span className="text-white text-4xl mb-2">🔇</span>
@@ -385,7 +364,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
         </div>
       </div>
 
-      {/* 모달들 (기존 코드 그대로 사용) */}
+      {/* 모달들 (기존 코드 그대로 사용 - 생략 없이 그대로 유지) */}
       {chatMode === 'select' && (
         <div className="absolute inset-0 z-60 bg-black flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-800">
@@ -416,8 +395,6 @@ const ReelsView = ({ onClose, onStartChat }) => {
             </div>
         </div>
       )}
-      
-      {/* 1:1 대화 상세, 결제, 템플릿, 가이드 모달 등 (나머지 기존 코드 유지) */}
       {chatMode === 'oneOnOneInfo' && (
           <div className="absolute inset-0 z-[70] bg-black flex flex-col">
              <div className="flex items-center justify-between p-4 border-b border-gray-800">

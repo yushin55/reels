@@ -211,8 +211,11 @@ const ReelsView = ({ onClose, onStartChat }) => {
     // 모달이 열려있으면 터치 이벤트 무시
     if (showChatModal || chatMode) return;
     touchEndY.current = e.touches[0].clientY;
-    // 기본 스크롤 방지
-    e.preventDefault();
+    const diff = Math.abs(touchStartY.current - touchEndY.current);
+    // 드래그가 감지되면(10px 이상 움직임) 기본 스크롤 방지
+    if (diff > 10) {
+      e.preventDefault();
+    }
   };
 
   const handleTouchEnd = () => {
@@ -297,15 +300,18 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
           {/* 소리 켜기/끄기 오버레이 버튼 */}
           <div 
-            className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMuted(!isMuted);
-            }}
+            className="absolute inset-0 z-10 flex items-center justify-center"
             onTouchStart={(e) => {
               e.stopPropagation();
             }}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+            }}
             onTouchEnd={(e) => {
+              e.stopPropagation();
+              setIsMuted(!isMuted);
+            }}
+            onClick={(e) => {
               e.stopPropagation();
               setIsMuted(!isMuted);
             }}

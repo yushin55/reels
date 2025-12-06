@@ -143,7 +143,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
     };
   };
 
-  // 비디오 터치 끝: 손가락을 뺐을 때 이동 거리 계산
+  // [갤럭시 즉시 반응] 터치 끝: 탭/스와이프 통합 판별
   const handleVideoTouchEnd = (e) => {
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndYCoord = e.changedTouches[0].clientY;
@@ -152,18 +152,18 @@ const ReelsView = ({ onClose, onStartChat }) => {
     const distanceX = Math.abs(touchEndX - videoTouchStartRef.current.x);
     const distanceY = Math.abs(touchEndYCoord - videoTouchStartRef.current.y);
 
-    // ★ [핵심] 이동 거리가 10px 미만일 때만 '탭(클릭)'으로 인정
+    // ★ [핵심] 이동 거리가 10px 미만일 때만 '탭'으로 인정 → 즉시 소리 토글
     if (distanceX < 10 && distanceY < 10) {
-      e.stopPropagation(); // 탭이면 부모(컨테이너)에게 알리지 마! (화면넘김 방지)
-      toggleSound();
+      e.preventDefault(); // 브라우저의 click 이벤트 발생 방지 (300ms 지연 제거)
+      e.stopPropagation(); // 부모로 전파 방지 (화면넘김 방지)
+      toggleSound(); // 손 떼자마자 즉시 실행!
     }
-    // 10px 이상 움직였으면 그냥 둠 -> 이벤트가 부모로 버블링되어 스와이프 처리됨
+    // 10px 이상 움직였으면 스와이프로 간주 (부모에서 화면 전환)
   };
 
-  // PC 클릭 처리 (모바일은 터치 이벤트 사용)
-  const handleVideoClick = (e) => {
-    e.stopPropagation(); // 클릭 이벤트도 부모에게 전달되지 않게 차단
-    // PC에서는 클릭으로 소리 토글
+  // [PC 전용] 마우스 클릭 처리
+  const handleVideoMouseUp = (e) => {
+    e.stopPropagation();
     toggleSound();
   };
 
@@ -468,13 +468,13 @@ const ReelsView = ({ onClose, onStartChat }) => {
           </div>
 
           {/* 소리 켜기/끄기 오버레이 버튼 */}
-          {/* ★ touch-auto: 부모의 touch-none을 오버라이드하여 터치 허용 */}
+          {/* ★ onClick 제거: 갤럭시에서 300ms 지연 발생하므로 onTouchEnd만 사용 */}
           <div 
             className="absolute inset-0 z-10 flex items-center justify-center touch-auto"
             style={{ touchAction: 'auto' }}
             onTouchStart={handleVideoTouchStart}
             onTouchEnd={handleVideoTouchEnd}
-            onClick={handleVideoClick}
+            onMouseUp={handleVideoMouseUp}
           >
             {isMuted && (
               <div className="bg-black/40 p-5 rounded-full backdrop-blur-sm animate-pulse pointer-events-none flex flex-col items-center">

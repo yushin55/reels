@@ -69,6 +69,22 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const closeGuide = () => {
     setShowGuide(false);
     localStorage.setItem('hasSeenReelsGuide', 'true');
+    
+    // 가이드 종료 시 음소거 해제 (사용자 상호작용으로 인한 자동 unmute)
+    globalSoundOn = true;
+    setIsMuted(false);
+    
+    // iframe이 있으면 즉시 음소거 해제 및 재생
+    if (iframeRef.current) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: 'unMute', args: [] }), 
+        '*'
+      );
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), 
+        '*'
+      );
+    }
   };
 
   // [소리 토글] 사용자가 화면을 탭했을 때 실행

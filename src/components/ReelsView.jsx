@@ -377,6 +377,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
               </div>
             </div>
           </div>
+
         </div>
       </div>
 

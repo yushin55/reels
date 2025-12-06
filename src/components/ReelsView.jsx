@@ -19,6 +19,9 @@ import vlogDataDefault from '../data/vlogData';
 import { db, auth } from '../config/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
+// 전역 변수: 영상이 바뀌어도 소리 켜짐 상태 유지
+let globalMuteState = true;
+
 const ReelsView = ({ onClose, onStartChat }) => {
   // 컴포넌트 마운트 시 랜덤 배열 생성
   const [shuffledVlogs] = useState(() => {
@@ -40,7 +43,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const [questionDetail, setQuestionDetail] = useState('');
   const [email, setEmail] = useState('');
   const [selectedMentor, setSelectedMentor] = useState(null); // 선택한 멘토 정보 저장
-  const [isMuted, setIsMuted] = useState(true); // 음소거 상태 관리 (기본값: true)
+  const [isMuted, setIsMuted] = useState(globalMuteState); // 전역 상태로 초기화
   // 가이드라인은 처음 한 번만 표시 (localStorage 확인)
   const [showGuide, setShowGuide] = useState(() => {
     const hasSeenGuide = localStorage.getItem('hasSeenReelsGuide');
@@ -49,6 +52,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const [guideStep, setGuideStep] = useState(0); // 가이드 단계
   const containerRef = useRef(null);
   const iframeRef = useRef(null); // iframe 제어를 위한 ref
+  const videoTouchStartRef = useRef({ x: 0, y: 0 }); // 비디오 영역 터치 좌표
   const touchStartY = useRef(0);
   const touchEndY = useRef(0);
 
@@ -59,26 +63,55 @@ const ReelsView = ({ onClose, onStartChat }) => {
   };
 
   // 소리 켜기/끄기 함수 (postMessage 사용)
-  const toggleSound = (e) => {
-    e.stopPropagation(); // 이벤트 전파 막기
-    e.preventDefault(); // 기본 동작 막기
-
+  const toggleSound = () => {
     if (!iframeRef.current) return;
 
-    if (isMuted) {
-      // 소리 켜기
-      iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: 'command', func: 'unMute', args: [] }), 
-        '*'
-      );
-      setIsMuted(false);
-    } else {
-      // 소리 끄기
-      iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: 'command', func: 'mute', args: [] }), 
-        '*'
-      );
-      setIsMuted(true);
+    const newMuteState = !isMuted;
+    setIsMuted(newMuteState);
+    globalMuteState = newMuteState; // 전역 상태 업데이트
+
+    // 유튜브에 명령 전송
+    const command = newMuteState ? 'mute' : 'unMute';
+    iframeRef.current.contentWindow.postMessage(
+      JSON.stringify({ event: 'command', func: command, args: [] }), 
+      '*'
+    );
+  };
+
+  // 비디오 터치 시작: 손가락이 닿은 위치 기억
+  const handleVideoTouchStart = (e) => {
+    videoTouchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  };
+
+  // 비디오 터치 끝: 손가락을 뗐을 때 이동 거리 계산
+  const handleVideoTouchEnd = (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    // 가로/세로 이동 거리 계산
+    const distanceX = Math.abs(touchEndX - videoTouchStartRef.current.x);
+    const distanceY = Math.abs(touchEndY - videoTouchStartRef.current.y);
+
+    // 10px 미만으로 움직였다면 탭(클릭)으로 판단 -> 소리 토글
+    if (distanceX < 10 && distanceY < 10) {
+      toggleSound();
+    }
+    // 10px 이상 움직였다면 스크롤(드래그)로 판단 -> 아무것도 안 함
+  };
+
+  // 영상 로딩 완료 시 소리 상태 복원
+  const handleVideoLoad = () => {
+    // 이미 소리가 켜진 상태라면 로딩 직후 소리 켜기 명령 전송
+    if (!globalMuteState && iframeRef.current) {
+      setTimeout(() => {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'unMute', args: [] }), 
+          '*'
+        );
+      }, 500);
     }
   };
 
@@ -236,11 +269,6 @@ const ReelsView = ({ onClose, onStartChat }) => {
     // 모달이 열려있으면 터치 이벤트 무시
     if (showChatModal || chatMode) return;
     touchEndY.current = e.touches[0].clientY;
-    const diff = Math.abs(touchStartY.current - touchEndY.current);
-    // 드래그가 감지되면(30px 이상 움직임) 기본 스크롤 방지
-    if (diff > 30) {
-      e.preventDefault();
-    }
   };
 
   const handleTouchEnd = () => {
@@ -321,23 +349,20 @@ const ReelsView = ({ onClose, onStartChat }) => {
               title={currentVlog.username}
               allow="autoplay; encrypted-media"
               allowFullScreen
+              onLoad={handleVideoLoad}
             />
           </div>
 
           {/* 소리 켜기/끄기 오버레이 버튼 */}
           <div 
             className="absolute inset-0 z-10 flex items-center justify-center"
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              toggleSound(e);
-            }}
+            onTouchStart={handleVideoTouchStart}
+            onTouchEnd={handleVideoTouchEnd}
             onClick={(e) => {
-              toggleSound(e);
+              // PC에서는 드래그 개념이 적으므로 그냥 클릭 처리
+              if (window.matchMedia('(hover: hover)').matches) {
+                toggleSound();
+              }
             }}
           >
             {isMuted && (
@@ -383,19 +408,13 @@ const ReelsView = ({ onClose, onStartChat }) => {
 
               {/* 대화하기 버튼 */}
               <button 
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedMentor(currentVlog);
                   setChatMode('select'); // 선택 화면으로 전환
-                }}
-                onTouchStart={(e) => {
-                  e.stopPropagation();
-                }}
-                onTouchMove={(e) => {
-                  e.stopPropagation();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
                 }}
                 className="w-full py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-lg active:scale-95 text-xs touch-manipulation"
                 style={{ WebkitTapHighlightColor: 'transparent' }}

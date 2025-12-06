@@ -52,9 +52,13 @@ const ReelsView = ({ onClose, onStartChat }) => {
   const [guideStep, setGuideStep] = useState(0); // 가이드 단계
   const containerRef = useRef(null);
   const iframeRef = useRef(null); // iframe 제어를 위한 ref
-  const videoTouchStartRef = useRef({ x: 0, y: 0 }); // 비디오 영역 터치 좌표
-  const touchStartY = useRef(0);
-  const touchEndY = useRef(0);
+  
+  // [오버레이용] 탭 vs 스와이프 판별을 위한 좌표
+  const videoTouchStartRef = useRef({ x: 0, y: 0 });
+  
+  // [컨테이너용] 화면 전환 스와이프 감지 좌표
+  const swipeStartY = useRef(0);
+  const swipeEndY = useRef(0);
 
   // [핵심] 영상이 마운트될 때 전역 소리 설정과 강제 동기화
   useEffect(() => {
@@ -105,20 +109,18 @@ const ReelsView = ({ onClose, onStartChat }) => {
   // 비디오 터치 끝: 손가락을 뺐을 때 이동 거리 계산
   const handleVideoTouchEnd = (e) => {
     const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
+    const touchEndYCoord = e.changedTouches[0].clientY;
 
     // 가로/세로 이동 거리 계산
     const distanceX = Math.abs(touchEndX - videoTouchStartRef.current.x);
-    const distanceY = Math.abs(touchEndY - videoTouchStartRef.current.y);
+    const distanceY = Math.abs(touchEndYCoord - videoTouchStartRef.current.y);
 
-    // 이동 거리가 10px 미만이면 => "이건 탭(클릭)이다!"
+    // ★ [핵심] 이동 거리가 10px 미만일 때만 '탭(클릭)'으로 인정
     if (distanceX < 10 && distanceY < 10) {
-      // ★ 탭일 때만 이벤트가 부모(슬라이더)로 퍼지는 것을 막습니다.
-      e.stopPropagation();
+      e.stopPropagation(); // 탭이면 부모(컨테이너)에게 알리지 마! (화면넘김 방지)
       toggleSound();
     }
-    // 이동 거리가 10px 이상이면 => "이건 스크롤(드래그)이다!"
-    // 아무것도 하지 않음 (자연스럽게 이벤트가 부모로 전달되어 스크롤 작동)
+    // 10px 이상 움직였으면 그냥 둠 -> 이벤트가 부모로 버블링되어 스와이프 처리됨
   };
 
   // 갤럭시에서 발생하는 '유령 클릭' 방지용
@@ -280,63 +282,78 @@ const ReelsView = ({ onClose, onStartChat }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, isTransitioning, showChatModal, chatMode]);
 
-  // 터치 이벤트 처리
-  const handleTouchStart = (e) => {
-    // 모달이 열려있으면 터치 이벤트 무시
+  // ---------------------------------------------------------
+  // [컨테이너 터치 로직] - 화면 넘기기 담당
+  // ---------------------------------------------------------
+  
+  // 터치 시작
+  const handleContainerTouchStart = (e) => {
     if (showChatModal || chatMode) return;
-    touchStartY.current = e.touches[0].clientY;
-    // ★ [수정] 터치 시작 시 End 좌표도 같이 초기화
-    // 단순 탭을 했을 때 '이동 거리 0'으로 인식하여 화면이 넘어가지 않음
-    touchEndY.current = e.touches[0].clientY;
+    swipeStartY.current = e.touches[0].clientY;
+    swipeEndY.current = e.touches[0].clientY; // 시작할 때 End도 초기화 (중요!)
   };
 
-  const handleTouchMove = (e) => {
-    // 모달이 열려있으면 터치 이벤트 무시
+  // 터치 이동 (갤럭시 드래그 이슈 해결 핵심)
+  const handleContainerTouchMove = (e) => {
     if (showChatModal || chatMode) return;
-    touchEndY.current = e.touches[0].clientY;
+    
+    // ★ [핵심 해결책] 브라우저의 기본 스크롤 동작을 막아야 
+    // 자바스크립트가 드래그 방향을 정확히 읽을 수 있음
+    if (e.cancelable) e.preventDefault();
+    
+    swipeEndY.current = e.touches[0].clientY;
   };
 
-  const handleTouchEnd = () => {
-    // 모달이 열려있으면 터치 이벤트 무시
+  // 터치 끝
+  const handleContainerTouchEnd = () => {
     if (showChatModal || chatMode) return;
-    const diff = touchStartY.current - touchEndY.current;
-    // 50px 이상 움직였을 때만 스와이프로 인정 (탭 무시)
+    
+    const diff = swipeStartY.current - swipeEndY.current;
+    
+    // ★ [판정 기준] 50px 이상 움직여야만 스와이프로 인정
     if (Math.abs(diff) > 50) {
-      if (diff > 0) goToNext();
-      else goToPrev();
+      if (diff > 0) {
+        // Start(아래) - End(위) > 0 : 손가락을 위로 올림 -> 다음 영상
+        goToNext();
+      } else {
+        // Start(위) - End(아래) < 0 : 손가락을 아래로 내림 -> 이전 영상
+        goToPrev();
+      }
     }
+    // 50px 미만이면 아무 일도 안 함 (단순 터치 시 화면 안 넘어감)
   };
 
   const currentVlog = shuffledVlogs[currentIndex];
 
-  // 터치 이벤트를 passive: false로 등록
+  // 터치 이벤트를 passive: false로 등록 (preventDefault 활성화)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const touchStartHandler = (e) => handleTouchStart(e);
-    const touchMoveHandler = (e) => handleTouchMove(e);
-    const touchEndHandler = (e) => handleTouchEnd(e);
+    const onTouchStart = (e) => handleContainerTouchStart(e);
+    const onTouchMove = (e) => handleContainerTouchMove(e);
+    const onTouchEnd = (e) => handleContainerTouchEnd(e);
 
-    container.addEventListener('touchstart', touchStartHandler, { passive: false });
-    container.addEventListener('touchmove', touchMoveHandler, { passive: false });
-    container.addEventListener('touchend', touchEndHandler, { passive: false });
+    // ★ passive: false를 해야 e.preventDefault()가 작동함
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd, { passive: false });
 
     return () => {
-      container.removeEventListener('touchstart', touchStartHandler);
-      container.removeEventListener('touchmove', touchMoveHandler);
-      container.removeEventListener('touchend', touchEndHandler);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
     };
   }, [showChatModal, chatMode, currentIndex, isTransitioning]);
 
   return (
     <div 
+  return (
+    <div 
       ref={containerRef}
-      className="absolute inset-0 z-50 bg-black flex flex-col overflow-hidden touch-none"
-    >
       {/* 헤더 */}
-      <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-30 bg-gradient-to-b from-black/80 to-transparent">
-        <h2 className="text-white font-bold text-lg flex items-center gap-2">
+      <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-30 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+        <h2 className="text-white font-bold text-lg flex items-center gap-2 pointer-events-auto">
           <Play size={20} className="text-pink-500 fill-pink-500" />
           Job Reels
           <span className="text-sm font-normal text-gray-400 ml-2">
@@ -345,9 +362,11 @@ const ReelsView = ({ onClose, onStartChat }) => {
         </h2>
         <button 
           onClick={onClose} 
-          className="p-2 hover:bg-white/10 rounded-full text-white transition"
+          className="p-2 hover:bg-white/10 rounded-full text-white transition pointer-events-auto"
         >
           <X size={24} />
+        </button>
+      </div> size={24} />
         </button>
       </div>
 
@@ -448,7 +467,7 @@ const ReelsView = ({ onClose, onStartChat }) => {
           </div>
 
           {/* 오른쪽 상단 저장 버튼 */}
-          <div className="absolute right-4 top-4">
+          <div className="absolute right-4 top-4 z-40">
             <button 
               onClick={() => toggleInterest(currentVlog.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all active:scale-95 backdrop-blur-sm ${
